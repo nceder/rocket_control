@@ -40,9 +40,10 @@ LF = 2
 RT = 3
 FIRE = 4
 STOP = 5
+SLEEP = 8
 CALIBRATE = 10
-command_list = [DN, UP, LF, RT, FIRE, STOP]
-command_names = ["DN", "UP", "LF", "RT", "FIRE", "STOP"]
+command_list = [DN, UP, LF, RT, FIRE, STOP, SLEEP]
+command_names = ["DN", "UP", "LF", "RT", "FIRE", "STOP", "SLEEP"]
 # estimated degrees of travel for each command - limit to limit
 degrees = [30.0,30.0,305.0,305.0]
 lock = threading.Lock()
@@ -57,7 +58,13 @@ class rocket_soap_thread(threading.Thread):
         # average times for each command -  limit to limit
         self.times = [1.8,1.8,14.0, 14.3]
         # seconds per degree of travel for each command
-        self.degree_times = [self.times[0]/degrees[0],self.times[1]/degrees[1],self.times[2]/degrees[2],self.times[3]/degrees[3], 4, 0]
+        self.degree_times = {DN:self.times[0]/degrees[0],
+                             UP:self.times[1]/degrees[1],
+                             LF:self.times[2]/degrees[2],
+                             RT:self.times[3]/degrees[3],
+                             FIRE:4,
+                             STOP:0,
+                             SLEEP:1}
 
     def run(self):
         """ will run command, duration tuples from commands list until list is empty.
@@ -119,9 +126,10 @@ class rocket_soap_thread(threading.Thread):
             self.times[command+1] = sum(test_times[1::2])/len(test_times[1::2])
             print cmd_names[command+1], test_times[1::2]
             print "Averages:", self.times[command:command+2]
-            self.degree_times = [self.times[0]/degrees[0],self.times[1]/degrees[1],self.times[2]/degrees[2],self.times[3]/degrees[3],4,0]
-
-
+            self.degree_times[DN] = self.times[0]/degrees[0]
+            self.degree_times[UP] = self.times[1]/degrees[1]
+            self.degree_times[LF] = self.times[2]/degrees[2]
+            self.degree_times[RT] = self.times[3]/degrees[3]
         
     def translate_command(self, commandstr):
         try:
@@ -142,6 +150,8 @@ class rocket_soap_thread(threading.Thread):
                 command = FIRE
             elif command == "stop":
                 command = STOP
+            elif command == "sleep":
+                command = SLEEP
             elif command == "calibrate":
                 command = CALIBRATE
                 return command, amount
