@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+""" actually I think we want to make the turtle part be derived from rocket_control_soap... that is, we should listen for commands from the soap server and then follow them with turtle-rockets, rather than real ones... 
+
+Vern
+
+"
 #import turtle
 #def setupTurtleGraphics():
 #    pass
