@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import math
 
-class Rocket():
+class Rocket(object):
     '''x, y = coordinates on a plane
        heading = direction we're currently facing
        rocket_id = a unique identifier for identifying each rocket'''
@@ -16,9 +16,6 @@ class Rocket():
         self.center()
         self.turnTo(heading)
         self.liftTo(elevation, False)        
-
-    def change_id_to(self, new_id):
-        self.rocket_id = new_id
 
     def center(self):
         self.turn(-500, False)
@@ -79,12 +76,12 @@ class Rocket():
 
     def turn(self,degrees, debug = True):
         if debug:
-            print "%s (%s,%s) is turning %s degrees" % (self.rocket_id,
+            print "%s (%s,%s) is turning %.02f degrees" % (self.rocket_id,
                                                         self.x,self.y, degrees)
 
     def lift(self,degrees, debug = True):
         if debug:
-            print "%s (%s,%s) is lifting %s degrees" % (self.rocket_id,
+            print "%s (%s,%s) is lifting %.02f degrees" % (self.rocket_id,
                                                         self.x,self.y, degrees)
 
     def fire(self, num = 3, debug = True):
@@ -93,13 +90,13 @@ class Rocket():
     
     def sleep(self, seconds = 1, debug = True):
         print "%s (%s,%s) is sleeping... " % (self.rocket_id, self.x, self.y),
-        print "ZZZzzz...   " * int(seconds)
+        print "Zzz...   " * int(seconds)
 
 class ServerRocket(Rocket):
     '''Server rockets '''
     def __init__(self, server, *args, **kwargs):
         self.server = server
-        super(ServerRocket, self).__init__(self,*args, **kwargs)
+        super(ServerRocket, self).__init__(*args, **kwargs)
 
     def turn(self,degrees, debug = True):
         self.server.command(self.rocket_id,"turn:%s" % degrees)
@@ -122,14 +119,11 @@ class ServerRocket(Rocket):
             super(ServerRocket, self).sleep(seconds)
 
 class RocketArray(list):
-    def __init__(self,*args,**kwargs):
-        list.__init__(self,*args,**kwargs)
-
     def __getitem__(self, index):
         if isinstance(index,slice):
             return RocketArray(list.__getitem__(self, index))
         else:
-            return list.__getitem__(index)
+            return list.__getitem__(self, index)
 
     def center(self):
         for item in self:
@@ -203,17 +197,15 @@ class RocketArray(list):
             pause(1)
         self.lift(-40)
 
-if __name__ == "__main__":
-    import sys
-    from SOAPpy import SOAPProxy
-    host = "192.168.2.129"
-    port = 51285
-    if len(sys.argv) > 1:
-        host = sys.argv[1]
-    if len(sys.argv) > 2:
-        port = int(sys.argv[2])
-    SOAPServer = SOAPProxy("http://%s:%d" % (host,port))
-
+#if __name__ == "__main__":
+import sys
+from SOAPpy import SOAPProxy
+host = "localhost"
+port = 51285
+if len(sys.argv) > 1:
+    host = sys.argv[1]
+if len(sys.argv) > 2:
+    port = int(sys.argv[2])
     # TEST CODE HERE.
     # Text only rockets =         Rocket ((x,y),heading)
     # Special server rockets =    ServerRocket(SOAPServer,(x,y),heading)
