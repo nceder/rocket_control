@@ -46,9 +46,19 @@ while inputstr != "quit":
     elif inputstr == "reset":
         server.server_reset()
         inputstr = "|"
+    elif inputstr == "register":
+        server.register()
+        inputstr = "|"
+    elif inputstr[:10] == "unregister":
+        server.unregister(int(inputstr.split(":")[-1]))
+        inputstr = "|"
+    elif inputstr == "list":
+        print server.list_rockets()
+        inputstr = "|"
+        
     rocket_str, commandstr = inputstr.split("|")
     if rocket_str == "all":
-        rockets = list(range(num_rockets))
+        rockets = eval(server.list_rockets())
     else:
         rockets = eval("["+rocket_str+"]")
     for rocket in rockets:

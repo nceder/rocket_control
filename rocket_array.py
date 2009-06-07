@@ -2,12 +2,12 @@
 import math
 
 class Rocket(object):
-    '''x, y = coordinates on a plane
+    """x, y = coordinates on a plane
        heading = direction we're currently facing
-       rocket_id = a unique identifier for identifying each rocket'''
+       rocket_id = a unique identifier for identifying each rocket"""
     next_id = 0
     def __init__(self,(x,y),heading = 0, elevation = 15):
-        '''(x,y) coordinates, heading in degrees'''
+        """(x,y) coordinates, heading in degrees"""
         self.rocket_id = Rocket.next_id
         Rocket.next_id += 1
         self.x = x
@@ -93,7 +93,7 @@ class Rocket(object):
         print "Zzz...   " * int(seconds)
 
 class ServerRocket(Rocket):
-    '''Server rockets '''
+    """Server rockets """
     def __init__(self, server, *args, **kwargs):
         self.server = server
         super(ServerRocket, self).__init__(*args, **kwargs)
@@ -179,7 +179,7 @@ class RocketArray(list):
         self.lift(15)
             
     def cancan(self):
-        '''May not fail quite so horribly now.'''
+        """May not fail quite so horribly now."""
         return # But still, it probably does...
         odds = self[1::2]
         evens = RocketArray(self[::2])
