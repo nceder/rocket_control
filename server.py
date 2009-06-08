@@ -36,7 +36,7 @@ def server_reset():
     print "Server Reset!"
 
 if __name__ == "__main__":
-    ip="10.0.0.133"
+    ip="127.0.0.1"
     port=51285
     if len(sys.argv) > 1:
         ip = sys.argv[1]
