@@ -1,21 +1,28 @@
 #!/usr/bin/env python
-import math
+import math, time
+
+##
+## TODO: A way to change a rocket's id and x,y coordinates
+##
 
 class Rocket(object):
     """x, y = coordinates on a plane
        heading = direction we're currently facing
        rocket_id = a unique identifier for identifying each rocket"""
     next_id = 0
-    def __init__(self,(x,y),heading = 0, elevation = 15):
+    def __init__(self,rocket_id,(x,y),heading = 0, elevation = 15, recenter = True):
         """(x,y) coordinates, heading in degrees"""
-        self.rocket_id = Rocket.next_id
-        Rocket.next_id += 1
+        self.rocket_id = rocket_id
         self.x = x
         self.y = y
-
-        self.center()
-        self.turnTo(heading)
-        self.liftTo(elevation, False)        
+        
+        if recenter:
+            self.center()
+            self.turnTo(heading)
+            self.liftTo(elevation, False)        
+        else:
+            self.heading = 0
+            self.elevation = 15
 
     def center(self):
         self.turn(-500, False)
@@ -161,51 +168,89 @@ class RocketArray(list):
         self.lift(40)
         self.lift(-40)
         
-        self.sleep(5)
+        time.sleep(5)
         
         for item in self:
             item.lift(40)
-            item.sleep(.5)
+            time.sleep(.5)
             item.lift(-40)
-            item.sleep(.5)
+            time.sleep(.5)
             
-        self.sleep(5)
+        time.sleep(5)
         
         self.lift(40)
         self.lift(-40)
         
-        self.sleep(5)
+        time.sleep(5)
         
         self.lift(15)
             
     def cancan(self):
-        """May not fail quite so horribly now."""
-        return # But still, it probably does...
+        evens = self[::2]
         odds = self[1::2]
-        evens = RocketArray(self[::2])
-
-        def pause(seconds=5):
-            self.sleep(seconds)
         
         self.lift(-40)
-        pause()
+        time.sleep(2)
+
         evens.lift(40)
-        pause(1)
-        for i in range(2):
-            odds.lift(40)
-            evens.lift(-40)
-            pause(1)
+        time.sleep(2)
+
+        odds.lift(40)
+        evens.lift(-40)
+        time.sleep(2)
+        
+        odds.lift(-40)
+        evens.lift(40)
+        time.sleep(2)
+
+        odds.turn(20)
+        evens.turn(-20)
+        time.sleep(2)
+        
+        odds.turn(-40)
+        evens.turn(40)
+        time.sleep(2)
+
+        odds.lift(40)
+        evens.lift(-40)
+        time.sleep(2)
+        
+        odds.lift(-40)
+        evens.lift(40)
+        time.sleep(2)
+
+        odds.turn(20)
+        evens.turn(-20)
+        time.sleep(2)
+        
+        odds.lift(-40)
+        evens.lift(40)
+        time.sleep(2)
+  
         self.lift(-40)
 
-#if __name__ == "__main__":
-import sys
-from SOAPpy import SOAPProxy
-host = "localhost"
-port = 51285
-if len(sys.argv) > 1:
-    host = sys.argv[1]
-if len(sys.argv) > 2:
-    port = int(sys.argv[2])
-    # TEST CODE HERE.
-    # Text only rockets =         Rocket ((x,y),heading)
-    # Special server rockets =    ServerRocket(SOAPServer,(x,y),heading)
+def rocket_server(host = "192.168.1.152", port = 51285):
+    from SOAPpy import SOAPProxy        
+    SOAPServer = SOAPProxy("http://%s:%s"% (host,port))
+    return SOAPServer
+
+def server_array(server, coords = None, rocket_type = ServerRocket, recenter = False):
+    id_list = eval(server.list_rockets())
+
+    if coords == None:
+        coords = [(i,0) for i in range(len(id_list))]
+
+    rockets = RocketArray([rocket_type(server, r_id, i, recenter=recenter) for r_id, i in zip(id_list,coords)])
+    return rockets
+
+# So...
+#########
+#
+#     To get a list of rockets
+#
+# server = rocket_server()
+# rockets = server_array(server)
+
+#rs = server_array(rocket_server())
+
+
