@@ -4,16 +4,16 @@ import SOAPpy
 import Queue
 import sys
 
-rockets = []
+rockets = {}
 
-def register():
-    rockets.append(Queue.Queue())
-    print len(rockets)
-    return len(rockets)-1
+def register(id):
+    global rockets
+    rockets[id]=Queue.Queue()
+    print id
  
 def unregister(pos):
     global rockets
-    rockets[pos] = None
+    rockets.pop(pos)
 
 def command(pos, command):
     if command.lower() == "stop":
@@ -21,18 +21,20 @@ def command(pos, command):
     print "put", pos, command
     rockets[pos].put(command)
 
-def get_command(pos):
-    return rockets[pos].get()
+def get_command(id):
+    return rockets[id].get()
 
 def num_rockets():
     return len(rockets)
 
 def list_rockets():
-    return repr([rockets.index(x) for x in rockets if x])
+    #return repr([rockets.index(x) for x in rockets if x])
+    global rockets
+    return repr(rockets.keys())
 
 def server_reset():
     global rockets
-    rockets=[]
+    rockets={}
     print "Server Reset!"
 
 if __name__ == "__main__":

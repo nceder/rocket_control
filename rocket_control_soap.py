@@ -31,6 +31,8 @@ if len(sys.argv) > 1:
     host = sys.argv[1]
 if len(sys.argv) > 2:
     port = int(sys.argv[2])
+if len(sys.argv) > 3:
+    ids = map(int,sys.argv[3:])
 server =  SOAPProxy("http://%s:%s"% (host,port))
 
 # constants for commands
@@ -54,7 +56,6 @@ class rocket_soap_thread(threading.Thread):
     def __init__(self, rocket):
         threading.Thread.__init__(self)
         self.rocket = rocket
-        self.id = server.register()
         # average times for each command -  limit to limit
         self.times = [1.8,1.8,14.0, 14.3]
         # seconds per degree of travel for each command
@@ -66,11 +67,15 @@ class rocket_soap_thread(threading.Thread):
                              STOP:0,
                              SLEEP:1}
 
+    def assign_id(self, id):
+        self.id = id
+
     def run(self):
         """ will run command, duration tuples from commands list until list is empty.
             thread dies after list is empty
         """
         command = 8
+        server.register(self.id)
         while command != STOP:
             commandstr = server.get_command(self.id)
             command, duration = self.translate_command(commandstr)
@@ -165,9 +170,11 @@ class rocket_soap_thread(threading.Thread):
 
 def arm_launchers():
     """ function to acquire rockets and return a list of Rocket objects """
+    global ids
     lm = rocket_backend.RocketManager()
     lm.acquire_devices()
     rockets = [rocket_soap_thread(launcher) for launcher in lm.launchers]
+    map(rocket_soap_thread.assign_id,rockets,ids)
     for rocket in rockets:
         rocket.start()
     return rockets
