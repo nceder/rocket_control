@@ -30,9 +30,7 @@ port = 51285
 if len(sys.argv) > 1:
     host = sys.argv[1]
 if len(sys.argv) > 2:
-    port = int(sys.argv[2])
-if len(sys.argv) > 3:
-    ids = map(int,sys.argv[3:])
+    ids = map(int,sys.argv[2:])
 server =  SOAPProxy("http://%s:%s"% (host,port))
 
 # constants for commands
