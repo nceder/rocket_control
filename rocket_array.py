@@ -127,10 +127,16 @@ class ServerRocket(Rocket):
 
 class RocketArray(list):
     def __getitem__(self, index):
-        if isinstance(index,slice):
+        if isinstance(index,slice) or isinstance(index,list):
+            print "GETTING A SLICE!"
             return RocketArray(list.__getitem__(self, index))
         else:
+            print "NOT A SLICE!"
             return list.__getitem__(self, index)
+
+    # Why do we need this?! - sruiz 2009.06.14
+    def __getslice__(self, i, j):
+        return RocketArray(list.__getslice__(self, i, j))
 
     def center(self):
         for item in self:
@@ -215,21 +221,21 @@ class RocketArray(list):
         evens.lift(-40)
         time.sleep(2)
         
+        odds.turn(20)
+        evens.turn(-20)
+        time.sleep(2)
+
         odds.lift(-40)
         evens.lift(40)
         time.sleep(2)
 
-        odds.turn(20)
-        evens.turn(-20)
-        time.sleep(2)
-        
         odds.lift(-40)
         evens.lift(40)
         time.sleep(2)
   
         self.lift(-40)
 
-def rocket_server(host = "192.168.1.152", port = 51285):
+def rocket_server(host = "10.0.0.129", port = 51285):
     from SOAPpy import SOAPProxy        
     SOAPServer = SOAPProxy("http://%s:%s"% (host,port))
     return SOAPServer
@@ -251,6 +257,6 @@ def server_array(server, coords = None, rocket_type = ServerRocket, recenter = F
 # server = rocket_server()
 # rockets = server_array(server)
 
-#rs = server_array(rocket_server())
+rs = server_array(rocket_server())
 
 
