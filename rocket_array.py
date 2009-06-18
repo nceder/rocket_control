@@ -15,19 +15,19 @@ class Rocket(object):
         self.rocket_id = rocket_id
         self.x = x
         self.y = y
+        self._hd = heading
         
         if recenter:
             self.center()
-            self.turnTo(heading)
             self.liftTo(elevation, False)        
         else:
-            self.heading = 0
+            self.heading = self._hd
             self.elevation = 15
 
     def center(self):
         self.turn(-500, False)
         self.turn(180, False)
-        self.heading = 0
+        self.heading = self._hd
         
         self.lift(-50, False)
         self.lift(15, False)
@@ -128,10 +128,8 @@ class ServerRocket(Rocket):
 class RocketArray(list):
     def __getitem__(self, index):
         if isinstance(index,slice) or isinstance(index,list):
-            print "GETTING A SLICE!"
             return RocketArray(list.__getitem__(self, index))
         else:
-            print "NOT A SLICE!"
             return list.__getitem__(self, index)
 
     # Why do we need this?! - sruiz 2009.06.14
@@ -184,58 +182,45 @@ class RocketArray(list):
             
         time.sleep(5)
         
-        self.lift(40)
-        self.lift(-40)
-        
-        time.sleep(5)
-        
         self.lift(15)
             
     def cancan(self):
+        self.lift(-40)
+        time.sleep(2)
+
         evens = self[::2]
         odds = self[1::2]
         
-        self.lift(-40)
-        time.sleep(2)
-
         evens.lift(40)
         time.sleep(2)
 
-        odds.lift(40)
-        evens.lift(-40)
-        time.sleep(2)
-        
-        odds.lift(-40)
-        evens.lift(40)
-        time.sleep(2)
+        def odds_lift(i, pause = 2):
+            odds.lift(i)
+            evens.lift(-i)
+            time.sleep(pause)
 
-        odds.turn(20)
-        evens.turn(-20)
-        time.sleep(2)
-        
-        odds.turn(-40)
-        evens.turn(40)
-        time.sleep(2)
+        def odds_turn(i, pause = 2):
+            odds.turn(i)
+            evens.turn(-i)
+            time.sleep(pause)
 
-        odds.lift(40)
-        evens.lift(-40)
-        time.sleep(2)
-        
-        odds.turn(20)
-        evens.turn(-20)
-        time.sleep(2)
-
-        odds.lift(-40)
-        evens.lift(40)
-        time.sleep(2)
-
-        odds.lift(-40)
-        evens.lift(40)
-        time.sleep(2)
-  
+    	odds_lift(40)
+        odds_lift(-40)
+        odds_turn(20,1)
+        odds_lift(40)
+        odds_turn(-40)
+        odds_lift(-40)
+        odds_turn(40)
+        odds_lift(40)
+        odds_turn(-40)
+        odds_lift(-40)
+        odds_turn(20,1)
+        odds_lift(-40)
+        odds_lift(40)
+        odds_lift(-40)
         self.lift(-40)
 
-def rocket_server(host = "10.0.0.129", port = 51285):
+def rocket_server(host = "localhost", port = 51285):
     from SOAPpy import SOAPProxy        
     SOAPServer = SOAPProxy("http://%s:%s"% (host,port))
     return SOAPServer
@@ -257,6 +242,6 @@ def server_array(server, coords = None, rocket_type = ServerRocket, recenter = F
 # server = rocket_server()
 # rockets = server_array(server)
 
-rs = server_array(rocket_server())
+#rs = server_array(rocket_server())
 
 

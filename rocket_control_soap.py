@@ -27,6 +27,7 @@ import rocket_backend, sys, time, threading
 from SOAPpy import SOAPProxy
 host = "localhost"
 port = 51285
+ids = None
 if len(sys.argv) > 1:
     host = sys.argv[1]
 if len(sys.argv) > 2:
@@ -67,7 +68,7 @@ class rocket_soap_thread(threading.Thread):
 
     def assign_id(self, id):
         self.id = id
-
+    
     def run(self):
         """ will run command, duration tuples from commands list until list is empty.
             thread dies after list is empty
@@ -166,15 +167,35 @@ class rocket_soap_thread(threading.Thread):
         return command, duration
 
 
+def wiggle(launcher):
+    lock.acquire()
+    for i in range(10):
+                launcher.rocket.issue_command(DN)
+                time.sleep(0.1)
+                launcher.rocket.issue_command(UP)
+                time.sleep(0.1)
+    launcher.rocket.stop_movement()
+    lock.release()
+
 def arm_launchers():
-    """ function to acquire rockets and return a list of Rocket objects """
-    global ids
+    """ function to acquire rockets and return a list of Rocket objects"""
     lm = rocket_backend.RocketManager()
     lm.acquire_devices()
+
     rockets = [rocket_soap_thread(launcher) for launcher in lm.launchers]
-    map(rocket_soap_thread.assign_id,rockets,ids)
+
+    if ids:
+        map(rocket_soap_thread.assign_id,rockets,ids)
+    else:
+        for rocket in rockets:
+            print "I'm wiggling a rocket...",
+            wiggle(rocket)
+            this_id = int(raw_input("What id should it be? (ints only)"))
+            rocket.assign_id(this_id)
+
     for rocket in rockets:
         rocket.start()
+
     return rockets
       
 def main():
